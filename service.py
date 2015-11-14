@@ -2,8 +2,8 @@ __author__ = 'techbk'
 
 import asyncio
 from aiohttp import web
-
-
+import os
+import json
 # from aiohttp import MultiDict
 # from urlhandler import Url_handler
 
@@ -13,14 +13,41 @@ class PcapFileHandler:
 
         pass
 
+    def handle_file_info(self,directory,filename):
+        #print(directory)
+        #print(os.path.isfile(directory+'info'))
+        if not os.path.isfile(directory+'info'):
+            with open(directory+'info','w') as outfile:
+                json.dump({filename:0}, outfile)
+                outfile.close()
+        else:
+            with open(directory+'info', 'r+') as outfile:
+                info = json.load(outfile)
+                info[filename]=0
+                outfile.seek(0)
+                outfile.write(json.dumps(info))
+                outfile.truncate()
+                outfile.close()
+
+        with open(directory+'info','r') as outfile:
+            print(json.load(outfile))
+            outfile.close()
+
     @asyncio.coroutine
-    def handler_file_pcap(self, filename, content):
+    def handle_file_pcap(self, appname, filename, content):
+
         print( 'File name upload:', filename )
+        directory = 'pcap/'+appname+'/'
 
-        dest_filename = 'pcap/' + filename
+        if not os.path.exists(directory):
+            os.makedirs(directory)
 
-        destination = open( dest_filename, 'wb+' )
-        destination.write( content )
+        #dest_filename = directory + filename
+        with open( directory+filename, 'wb+' ) as destination:
+            destination.write( content )
+            destination.close()
+
+        self.handle_file_info(directory,filename)
 
         print( 'Saving file is DONE' )
         return True
@@ -37,13 +64,15 @@ class UrlHandler(object):
     @asyncio.coroutine
     def pcap(self, request):
         print(request.headers)
-        json_data = yield from request.json()
-        print(json_data)
+        print(request.GET)
+        print(request.content_type)
+        #json_data = yield from request.json()
+        #print(json_data)
         data = yield from request.post()
         print(data)
         input_file = data['file'].file
         content = input_file.read()
-        asyncio.async( self._pcapfilehandler.handler_file_pcap( data['file'].filename, content ) )
+        asyncio.async( self._pcapfilehandler.handle_file_pcap(data['ID_Client'], data['file'].filename, content ) )
 
         return web.Response( body=b"ok" )
         # return web.Response(body=content, headers=MultiDict({'CONTENT-DISPOSITION': input_file}))
