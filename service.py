@@ -21,7 +21,7 @@ class PcapFileHandler:
                 json.dump({filename:0}, outfile)
                 outfile.close()
         else:
-            with open(directory+'info', 'r+') as outfile:
+            with open(directory+'info', 'w+') as outfile:
                 info = json.load(outfile)
                 info[filename]=0
                 outfile.seek(0)
@@ -30,7 +30,7 @@ class PcapFileHandler:
                 outfile.close()
 
         with open(directory+'info','r') as outfile:
-            print(json.load(outfile))
+            #print(json.load(outfile))
             outfile.close()
 
     @asyncio.coroutine
@@ -63,9 +63,9 @@ class UrlHandler(object):
 
     @asyncio.coroutine
     def pcap(self, request):
-        print(request.headers)
+        #print(request.headers)
         print(request.GET)
-        print(request.content_type)
+        #print(request.content_type)
         #json_data = yield from request.json()
         #print(json_data)
         data = yield from request.post()
@@ -108,6 +108,6 @@ if __name__ == '__main__':
     loop = asyncio.get_event_loop( )
     srv, handler = loop.run_until_complete( init( loop ) )
     try:
-        loop.run_forever( )
+        loop.run_forever()
     except KeyboardInterrupt:
         pass
