@@ -59,8 +59,6 @@ class UrlHandler(object):
         self._pcapfilehandler = PcapFileHandler()
         pass
 
-
-
     @asyncio.coroutine
     def pcap(self, request):
         #print(request.headers)
@@ -70,12 +68,21 @@ class UrlHandler(object):
         #print(json_data)
         data = yield from request.post()
         print(data)
+
         input_file = data['file'].file
         content = input_file.read()
         asyncio.async( self._pcapfilehandler.handle_file_pcap(data['ID_Client'], data['file'].filename, content ) )
 
         return web.Response( body=b"ok" )
         # return web.Response(body=content, headers=MultiDict({'CONTENT-DISPOSITION': input_file}))
+
+    def projectlog(self,request):
+
+
+
+    def instancelog(self,request):
+
+
 
 
 @asyncio.coroutine
@@ -93,6 +100,8 @@ def init(loop):
 
     # app.router.add_route('GET', '/', index)
     app.router.add_route( 'POST', '/pcap', url_handler.pcap )
+    app.router.add_route('GET', '/projectlog', url_handler.projectlog)
+    app.router.add_route('GET', '/instancelog', url_handler.instancelog)
 
     # app.router.add_route('GET', '/doblastn', url_handler.doblastn)
     # app.router.add_route('GET', '/dostart_app1', url_handler.do_start_app1)
